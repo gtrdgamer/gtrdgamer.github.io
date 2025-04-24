@@ -6,22 +6,57 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <style>
     #map { width: 100%; height: 100vh; }
-	  html,body {margin: 0;}
-	  footer {text-align: center; font-size: 0.9em; color: gray; position: absolute; margin-top: -20px; z-index: 1000; width: 100%;}
+	html,body {margin: 0;}
+	.popup {width: 300px;font-family:'Courier New';}
+	.popup>h1 {margin:0;}
+	.popup>p {margin-top:0;}
+	.popup>i {text-decoration:none;display:block;}
+	.p0::before {content: "○○○ ";}
+	.p1::before {content: "●○○ ";}
+	.p2::before {content: "●●○ ";}
+	.p3::before {content: "●●● ";}
   </style>
 </head>
 <body>
   <div id="map"></div>
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script>
+	const locations = [
+      {
+        x: 5466,
+        y: 2052,
+        name: "Fire Station No.13",
+		description: "The station motto is 'Defying fire's desire'",
+		threat: 0.4,
+        base: 2,
+        weapons: 3,
+        medical: 1,
+        food: 2,
+		new_location: true
+      },
+      {
+        x: 5425,
+        y: 1922,
+        name: "15 Independence Blvd",
+		description: "This family home was once full of life. But now sits abandoned",
+		threat: 0.3,
+        base: 1,
+        weapons: 1,
+        medical: 1,
+        food: 3,
+		new_location: true
+      }
+	];
+  </script>
+  <script>
     const tileWidth = 1024;
     const tileHeight = 1024;
     const rows = 6;
     const cols = 10;
-	  const mapWidth = cols * tileWidth;
+	const mapWidth = cols * tileWidth;
     const mapHeight = rows * tileHeight;
     const bounds = [[0, 0], [mapHeight, mapWidth]];
-	  const map = L.map('map', {crs: L.CRS.Simple, minZoom: -2, maxZoom: 1, maxBounds: bounds, maxBoundsViscosity: 1.0});
+	const map = L.map('map', {crs: L.CRS.Simple, minZoom: -2, maxZoom: 1, maxBounds: bounds, maxBoundsViscosity: 1.0});
     map.fitBounds(bounds);
 
     for (let row = 0; row < rows; row++) {
@@ -35,14 +70,30 @@
           [(rows-row + 0) * tileHeight, (col + 1) * tileWidth]
         ];
 
-        L.imageOverlay(imageUrl, imageBounds).addTo(map);
+        L.imageOverlay(imageUrl, imageBounds, {attribution: 'All map images are &copy; of their respective game creators. We do not own or claim any rights to these images. This site is a fan-made project for non-commercial use only and is not affiliated with or endorsed by the game developers.'}).addTo(map);
       }
     }
-  </script>
+	
+	locations.forEach(loc => {
+      const popupContent = `
+        <div class="popup">
+          <h1>${loc.name}</h1>
+		  <p>${loc.description}</p>
+		  
+          <i class="p${loc.base}">Base Resources</i>
+          <i class="p${loc.weapons}">Weapons</i>
+          <i class="p${loc.medical}">Medical</i>
+          <i class="p${loc.food}">Food</i>
+        </div>
+      `;
 
-  <footer>
-    All map images are © of their respective game creators. I do not own or claim any rights to these images.  
-    This site is a fan-made project for non-commercial use only and is not affiliated with or endorsed by the game developers.
-  </footer>
+      L.marker([loc.y, loc.x])
+        .addTo(map)
+        .bindPopup(popupContent);
+    });
+	
+	function onMapClick(e) {console.info("You clicked the map at " + e.latlng);}
+	map.on('click', onMapClick);
+  </script>
 </body>
 </html>
